@@ -1,4 +1,6 @@
-const CACHE_NAME = 'serwis-auta-v1';
+// Zmień tę wersję przy każdym deployu żeby wymusić odświeżenie cache
+const CACHE_VERSION = 'v2';
+const CACHE_NAME = `serwis-auta-${CACHE_VERSION}`;
 const ASSETS = [
     './',
     './index.html',
@@ -11,29 +13,31 @@ const ASSETS = [
     './icons/icon-512.png'
 ];
 
-// Install: cache app shell
+// Install: pobierz wszystkie pliki do nowego cache
 self.addEventListener('install', (e) => {
     e.waitUntil(
-        caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
+        caches.open(CACHE_NAME)
+            .then(cache => cache.addAll(ASSETS))
+            .then(() => self.skipWaiting()) // aktywuj od razu, nie czekaj
     );
-    self.skipWaiting();
 });
 
-// Activate: clean old caches
+// Activate: usuń stary cache i przejmij kontrolę nad wszystkimi kartami
 self.addEventListener('activate', (e) => {
     e.waitUntil(
-        caches.keys().then(keys =>
-            Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-        )
+        caches.keys()
+            .then(keys => Promise.all(
+                keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+            ))
+            .then(() => self.clients.claim()) // przejmij otwarte karty od razu
     );
-    self.clients.claim();
 });
 
-// Fetch: cache-first for app shell, network-first for CDN
+// Fetch: network-first dla CDN, cache-first dla lokalnych plików
 self.addEventListener('fetch', (e) => {
     const url = new URL(e.request.url);
 
-    // Network-first for CDN resources (SheetJS)
+    // CDN (SheetJS) — najpierw sieć, fallback na cache
     if (url.origin !== location.origin) {
         e.respondWith(
             fetch(e.request)
@@ -47,7 +51,7 @@ self.addEventListener('fetch', (e) => {
         return;
     }
 
-    // Cache-first for local assets
+    // Lokalne pliki — cache-first
     e.respondWith(
         caches.match(e.request).then(cached => cached || fetch(e.request))
     );
