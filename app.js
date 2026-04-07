@@ -198,6 +198,11 @@ function resetForm() {
     document.getElementById('form-submit-btn').textContent = 'Zapisz';
 }
 
+function cancelForm() {
+    resetForm();
+    showView('history');
+}
+
 // --- Delete ---
 function openDeleteDialog(id) {
     deleteTargetId = id;

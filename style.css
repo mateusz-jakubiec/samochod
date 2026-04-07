@@ -316,6 +316,20 @@ body {
     color: var(--text-secondary);
 }
 
+.form-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.form-buttons .btn-primary {
+    flex: 2;
+}
+
+.form-buttons .btn-secondary {
+    flex: 1;
+}
+
 .btn-primary {
     background: var(--primary);
     color: white;
