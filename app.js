@@ -1,5 +1,6 @@
 let currentView = 'history';
 let deleteTargetId = null;
+let editingId = null; // null = tryb dodawania, number = tryb edycji
 
 // --- Navigation ---
 function showView(name) {
@@ -16,7 +17,11 @@ function showView(name) {
 
     if (name === 'history') loadEntries();
     if (name === 'reminders') loadReminders();
-    if (name === 'add') document.getElementById('entry-description').focus();
+    if (name === 'add') {
+        // Jeśli wchodzimy przez FAB lub zakładkę (nie przez edycję) — resetuj formularz
+        if (editingId === null) resetForm();
+        document.getElementById('entry-description').focus();
+    }
 }
 
 // --- Format helpers ---
@@ -51,7 +56,10 @@ async function loadEntries() {
         <div class="entry-card" data-id="${e.id}">
             <div class="entry-card-header">
                 <span class="entry-date">${formatDate(e.date)}</span>
-                <button class="delete-btn" onclick="openDeleteDialog(${e.id})" title="Usun">&times;</button>
+                <div class="card-actions">
+                    <button class="edit-btn" onclick="openEditForm(${e.id})" title="Edytuj">&#9998;</button>
+                    <button class="delete-btn" onclick="openDeleteDialog(${e.id})" title="Usun">&times;</button>
+                </div>
             </div>
             <div class="entry-description">${escapeHtml(e.description)}</div>
             <div class="entry-details">
@@ -148,17 +156,47 @@ document.getElementById('entry-form').addEventListener('submit', async (e) => {
         reminder_km: parseInt(document.getElementById('entry-reminder').value) || null
     };
 
-    await addEntry(entry);
+    if (editingId !== null) {
+        await updateEntry(editingId, entry);
+        showToast('Zaktualizowano!');
+    } else {
+        await addEntry(entry);
+        showToast('Zapisano!');
+    }
 
-    // Reset form
-    document.getElementById('entry-form').reset();
-    setDefaultDate();
-
-    showToast('Zapisano!');
+    resetForm();
     showView('history');
     updateReminderBanner();
     updateMileageBadge();
 });
+
+// --- Edit ---
+async function openEditForm(id) {
+    const entry = await getEntry(id);
+    if (!entry) return;
+
+    editingId = id;
+
+    document.getElementById('entry-date').value = entry.date;
+    document.getElementById('entry-description').value = entry.description;
+    document.getElementById('entry-parts').value = entry.parts || '';
+    document.getElementById('entry-price').value = entry.price || '';
+    document.getElementById('entry-mileage').value = entry.mileage;
+    document.getElementById('entry-reminder').value = entry.reminder_km || '';
+
+    document.getElementById('form-title').textContent = 'Edytuj wpis';
+    document.getElementById('form-submit-btn').textContent = 'Zaktualizuj';
+
+    showView('add');
+}
+
+function resetForm() {
+    editingId = null;
+    document.getElementById('entry-form').reset();
+    setDefaultDate();
+    document.getElementById('form-title').textContent = 'Dodaj wpis';
+    document.getElementById('form-submit-btn').textContent = 'Zapisz';
+}
 
 // --- Delete ---
 function openDeleteDialog(id) {
@@ -240,6 +278,7 @@ function setDefaultDate() {
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('entry-date').value = today;
 }
+
 
 // --- Init ---
 async function init() {

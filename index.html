@@ -52,9 +52,10 @@
         </div>
     </main>
 
-    <!-- View: Dodaj wpis -->
+    <!-- View: Dodaj/Edytuj wpis -->
     <main id="view-add" class="view">
         <form id="entry-form" class="entry-form">
+        <h2 id="form-title" class="form-title">Dodaj wpis</h2>
             <div class="form-group">
                 <label for="entry-date">Data</label>
                 <input type="date" id="entry-date" required>
@@ -80,7 +81,7 @@
                 <input type="number" id="entry-reminder" inputmode="numeric" min="0" placeholder="np. 155000">
                 <span class="helper">Nastepny serwis przy X km</span>
             </div>
-            <button type="submit" class="btn-primary">Zapisz</button>
+            <button type="submit" id="form-submit-btn" class="btn-primary">Zapisz</button>
         </form>
     </main>
 

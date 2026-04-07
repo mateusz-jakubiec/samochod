@@ -209,6 +209,29 @@ body {
     font-weight: 500;
 }
 
+.card-actions {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+}
+
+.edit-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 50%;
+    -webkit-tap-highlight-color: transparent;
+    font-size: 15px;
+    line-height: 1;
+}
+
+.edit-btn:active {
+    background: #e8f0fe;
+    color: var(--primary);
+}
+
 .delete-btn {
     background: none;
     border: none;
@@ -244,6 +267,13 @@ body {
 }
 
 /* Form */
+.form-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+}
+
 .entry-form {
     display: flex;
     flex-direction: column;
