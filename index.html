@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#1a73e8">
+    <title>Serwis Auta</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Reminder banner -->
+    <div id="reminder-banner" class="reminder-banner hidden" onclick="showView('reminders')">
+        <span id="reminder-banner-text"></span>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <h1>Serwis Auta</h1>
+        <div class="header-info">
+            <span id="current-mileage" class="mileage-badge">-- km</span>
+            <button id="export-btn" class="icon-btn" onclick="exportData()" title="Eksport Excel">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- View: Historia -->
+    <main id="view-history" class="view active">
+        <div id="entries-list" class="entries-list">
+            <div class="empty-state" id="empty-state">
+                <p>Brak wpisow</p>
+                <p class="hint">Kliknij + zeby dodac pierwsza naprawe</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- View: Dodaj wpis -->
+    <main id="view-add" class="view">
+        <form id="entry-form" class="entry-form">
+            <div class="form-group">
+                <label for="entry-date">Data</label>
+                <input type="date" id="entry-date" required>
+            </div>
+            <div class="form-group">
+                <label for="entry-description">Opis *</label>
+                <input type="text" id="entry-description" placeholder="np. Wymiana oleju" required>
+            </div>
+            <div class="form-group">
+                <label for="entry-parts">Czesci</label>
+                <input type="text" id="entry-parts" placeholder="np. Filtr oleju, olej 5W30">
+            </div>
+            <div class="form-group">
+                <label for="entry-price">Cena (PLN)</label>
+                <input type="number" id="entry-price" inputmode="decimal" step="0.01" min="0" placeholder="0.00">
+            </div>
+            <div class="form-group">
+                <label for="entry-mileage">Przebieg (km) *</label>
+                <input type="number" id="entry-mileage" inputmode="numeric" min="0" required placeholder="np. 145000">
+            </div>
+            <div class="form-group">
+                <label for="entry-reminder">Przypomnienie (km)</label>
+                <input type="number" id="entry-reminder" inputmode="numeric" min="0" placeholder="np. 155000">
+                <span class="helper">Nastepny serwis przy X km</span>
+            </div>
+            <button type="submit" class="btn-primary">Zapisz</button>
+        </form>
+    </main>
+
+    <!-- View: Przypomnienia -->
+    <main id="view-reminders" class="view">
+        <div id="reminders-list" class="reminders-list">
+            <div class="empty-state" id="reminders-empty">
+                <p>Brak przypomnien</p>
+                <p class="hint">Dodaj wpis z przypomnieniem km</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- FAB -->
+    <button id="fab" class="fab" onclick="showView('add')">+</button>
+
+    <!-- Bottom nav -->
+    <nav class="bottom-nav">
+        <button class="nav-btn active" data-view="history" onclick="showView('history')">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 8v4l3 3"/>
+                <circle cx="12" cy="12" r="10"/>
+            </svg>
+            <span>Historia</span>
+        </button>
+        <button class="nav-btn" data-view="add" onclick="showView('add')">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            <span>Dodaj</span>
+        </button>
+        <button class="nav-btn" data-view="reminders" onclick="showView('reminders')">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+            <span>Przypomnienia</span>
+        </button>
+    </nav>
+
+    <!-- Delete confirmation dialog -->
+    <div id="delete-dialog" class="dialog-overlay hidden">
+        <div class="dialog">
+            <p>Usunac ten wpis?</p>
+            <div class="dialog-actions">
+                <button class="btn-secondary" onclick="closeDeleteDialog()">Anuluj</button>
+                <button class="btn-danger" id="confirm-delete-btn">Usun</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.mini.min.js"></script>
+    <script src="db.js"></script>
+    <script src="export.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

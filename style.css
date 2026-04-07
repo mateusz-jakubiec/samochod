@@ -1,0 +1,501 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary: #1a73e8;
+    --primary-dark: #1557b0;
+    --danger: #d93025;
+    --danger-bg: #fce8e6;
+    --warning: #f9ab00;
+    --warning-bg: #fef7e0;
+    --success: #1e8e3e;
+    --success-bg: #e6f4ea;
+    --bg: #f8f9fa;
+    --card-bg: #ffffff;
+    --text: #202124;
+    --text-secondary: #5f6368;
+    --border: #dadce0;
+    --nav-height: 56px;
+    --header-height: 56px;
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding-top: var(--header-height);
+    padding-bottom: calc(var(--nav-height) + var(--safe-bottom));
+    -webkit-text-size-adjust: 100%;
+}
+
+/* Header */
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--header-height);
+    background: var(--primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    z-index: 100;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.header h1 {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.header-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mileage-badge {
+    background: rgba(255,255,255,0.2);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.icon-btn:active {
+    background: rgba(255,255,255,0.2);
+}
+
+/* Reminder banner */
+.reminder-banner {
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
+    right: 0;
+    background: var(--warning-bg);
+    color: #7a6200;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    z-index: 99;
+    border-bottom: 1px solid #f0d060;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.reminder-banner::before {
+    content: "!";
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    background: var(--warning);
+    color: white;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.reminder-banner.danger {
+    background: var(--danger-bg);
+    color: #8b1a10;
+    border-bottom-color: #f0a0a0;
+}
+
+.reminder-banner.danger::before {
+    background: var(--danger);
+}
+
+/* Views */
+.view {
+    display: none;
+    padding: 12px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.view.active {
+    display: block;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Entries list */
+.entries-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.entry-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 14px 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    position: relative;
+}
+
+.entry-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 6px;
+}
+
+.entry-date {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.entry-description {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.entry-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.entry-detail {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.entry-detail strong {
+    color: var(--text);
+    font-weight: 600;
+}
+
+.entry-reminder-tag {
+    display: inline-block;
+    background: var(--warning-bg);
+    color: #7a6200;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 8px;
+    margin-top: 8px;
+    font-weight: 500;
+}
+
+.delete-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 50%;
+    -webkit-tap-highlight-color: transparent;
+    font-size: 18px;
+    line-height: 1;
+}
+
+.delete-btn:active {
+    background: var(--danger-bg);
+    color: var(--danger);
+}
+
+/* Empty state */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-secondary);
+}
+
+.empty-state p:first-child {
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.empty-state .hint {
+    font-size: 14px;
+}
+
+/* Form */
+.entry-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding-bottom: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.form-group label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.form-group input {
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 16px;
+    font-family: inherit;
+    background: var(--card-bg);
+    color: var(--text);
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+}
+
+.helper {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    margin-top: 8px;
+}
+
+.btn-primary:active {
+    background: var(--primary-dark);
+}
+
+/* Reminders list */
+.reminders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.reminder-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 14px 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    border-left: 4px solid var(--success);
+}
+
+.reminder-card.warning {
+    border-left-color: var(--warning);
+}
+
+.reminder-card.danger {
+    border-left-color: var(--danger);
+}
+
+.reminder-description {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.reminder-info {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.reminder-remaining {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.reminder-card.warning .reminder-remaining {
+    color: #b87a00;
+}
+
+.reminder-card.danger .reminder-remaining {
+    color: var(--danger);
+}
+
+.reminder-card:not(.warning):not(.danger) .reminder-remaining {
+    color: var(--success);
+}
+
+/* FAB */
+.fab {
+    position: fixed;
+    bottom: calc(var(--nav-height) + var(--safe-bottom) + 16px);
+    right: 16px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: white;
+    border: none;
+    font-size: 28px;
+    font-weight: 300;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(26, 115, 232, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.fab:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 8px rgba(26, 115, 232, 0.4);
+}
+
+/* Bottom nav */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: calc(var(--nav-height) + var(--safe-bottom));
+    padding-bottom: var(--safe-bottom);
+    background: var(--card-bg);
+    display: flex;
+    border-top: 1px solid var(--border);
+    z-index: 100;
+}
+
+.nav-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 11px;
+    cursor: pointer;
+    padding: 6px 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.nav-btn.active {
+    color: var(--primary);
+}
+
+.nav-btn svg {
+    width: 22px;
+    height: 22px;
+}
+
+/* Dialog */
+.dialog-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    padding: 20px;
+}
+
+.dialog {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 300px;
+    width: 100%;
+}
+
+.dialog p {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.dialog-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-secondary {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--card-bg);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--text);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.btn-danger {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background: var(--danger);
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Toast notification */
+.toast {
+    position: fixed;
+    bottom: calc(var(--nav-height) + var(--safe-bottom) + 16px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #323232;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    z-index: 300;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+}
+
+.toast.show {
+    opacity: 1;
+}
