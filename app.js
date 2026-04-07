@@ -192,6 +192,30 @@ async function exportData() {
     exportToExcel(entries);
 }
 
+// --- Import ---
+async function importData(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    // Reset input so the same file can be selected again
+    input.value = '';
+
+    try {
+        const { imported, skipped } = await importFromExcel(file);
+        if (imported === 0) {
+            showToast('Brak wpisow do zaimportowania');
+        } else {
+            showToast(`Zaimportowano ${imported} wpis${imported === 1 ? '' : imported < 5 ? 'y' : 'ow'}${skipped > 0 ? ` (pominieto: ${skipped})` : ''}`);
+            showView('history');
+            updateReminderBanner();
+            updateMileageBadge();
+        }
+    } catch (err) {
+        showToast('Blad importu — sprawdz plik');
+        console.error(err);
+    }
+}
+
 // --- Toast ---
 function showToast(message) {
     let toast = document.querySelector('.toast');
