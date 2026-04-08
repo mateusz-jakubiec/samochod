@@ -1,3 +1,5 @@
+import { addEntry } from './db.js';
+
 // Mapowanie nazw kolumn z Excela na pola w bazie
 const COL_MAP = {
     'Data':               'date',
@@ -25,7 +27,7 @@ function parseExcelDate(val) {
     return null;
 }
 
-async function importFromExcel(file) {
+export async function importFromExcel(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = async (e) => {
@@ -72,7 +74,7 @@ async function importFromExcel(file) {
     });
 }
 
-function exportToExcel(entries) {
+export function exportToExcel(entries) {
     const data = entries.map(e => ({
         'Data': e.date,
         'Opis': e.description,

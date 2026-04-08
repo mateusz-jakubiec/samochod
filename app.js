@@ -1,6 +1,41 @@
+import { initAuth, login, logout } from './auth.js';
+import { addEntry, getAllEntries, getEntry, updateEntry, deleteEntry, getLatestMileage, getActiveReminders } from './db.js';
+import { exportToExcel, importFromExcel } from './export.js';
+
 let currentView = 'history';
 let deleteTargetId = null;
-let editingId = null; // null = tryb dodawania, number = tryb edycji
+let editingId = null;
+
+// --- Auth ---
+initAuth(
+    (user) => {
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('app').classList.remove('hidden');
+        init();
+    },
+    () => {
+        document.getElementById('app').classList.add('hidden');
+        document.getElementById('login-screen').classList.remove('hidden');
+    }
+);
+
+document.getElementById('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    const errorEl = document.getElementById('login-error');
+    errorEl.classList.add('hidden');
+    try {
+        await login(email, password);
+    } catch {
+        errorEl.classList.remove('hidden');
+    }
+});
+
+async function logoutUser() {
+    await logout();
+}
+window.logoutUser = logoutUser;
 
 // --- Navigation ---
 function showView(name) {
@@ -12,17 +47,16 @@ function showView(name) {
         btn.classList.toggle('active', btn.dataset.view === name);
     });
 
-    // Hide FAB on add view
     document.getElementById('fab').classList.toggle('hidden', name === 'add');
 
     if (name === 'history') loadEntries();
     if (name === 'reminders') loadReminders();
     if (name === 'add') {
-        // Jeśli wchodzimy przez FAB lub zakładkę (nie przez edycję) — resetuj formularz
         if (editingId === null) resetForm();
         document.getElementById('entry-description').focus();
     }
 }
+window.showView = showView;
 
 // --- Format helpers ---
 function formatDate(dateStr) {
@@ -57,8 +91,8 @@ async function loadEntries() {
             <div class="entry-card-header">
                 <span class="entry-date">${formatDate(e.date)}</span>
                 <div class="card-actions">
-                    <button class="edit-btn" onclick="openEditForm(${e.id})" title="Edytuj">&#9998;</button>
-                    <button class="delete-btn" onclick="openDeleteDialog(${e.id})" title="Usun">&times;</button>
+                    <button class="edit-btn" onclick="openEditForm('${e.id}')" title="Edytuj">&#9998;</button>
+                    <button class="delete-btn" onclick="openDeleteDialog('${e.id}')" title="Usun">&times;</button>
                 </div>
             </div>
             <div class="entry-description">${escapeHtml(e.description)}</div>
@@ -116,11 +150,11 @@ async function updateReminderBanner() {
     const reminders = await getActiveReminders();
     const banner = document.getElementById('reminder-banner');
     const text = document.getElementById('reminder-banner-text');
-
     const urgent = reminders.filter(r => r.remaining_km <= 2000);
 
     if (urgent.length === 0) {
         banner.classList.add('hidden');
+        document.body.style.paddingTop = '';
         return;
     }
 
@@ -133,7 +167,6 @@ async function updateReminderBanner() {
         text.textContent = `${urgent.length} przypomni${urgent.length === 1 ? 'enie' : 'en'} wkrotce`;
     }
 
-    // Shift content down when banner is visible
     document.body.style.paddingTop = (56 + banner.offsetHeight) + 'px';
 }
 
@@ -176,19 +209,18 @@ async function openEditForm(id) {
     if (!entry) return;
 
     editingId = id;
-
     document.getElementById('entry-date').value = entry.date;
     document.getElementById('entry-description').value = entry.description;
     document.getElementById('entry-parts').value = entry.parts || '';
     document.getElementById('entry-price').value = entry.price || '';
     document.getElementById('entry-mileage').value = entry.mileage;
     document.getElementById('entry-reminder').value = entry.reminder_km || '';
-
     document.getElementById('form-title').textContent = 'Edytuj wpis';
     document.getElementById('form-submit-btn').textContent = 'Zaktualizuj';
 
     showView('add');
 }
+window.openEditForm = openEditForm;
 
 function resetForm() {
     editingId = null;
@@ -202,17 +234,20 @@ function cancelForm() {
     resetForm();
     showView('history');
 }
+window.cancelForm = cancelForm;
 
 // --- Delete ---
 function openDeleteDialog(id) {
     deleteTargetId = id;
     document.getElementById('delete-dialog').classList.remove('hidden');
 }
+window.openDeleteDialog = openDeleteDialog;
 
 function closeDeleteDialog() {
     deleteTargetId = null;
     document.getElementById('delete-dialog').classList.add('hidden');
 }
+window.closeDeleteDialog = closeDeleteDialog;
 
 document.getElementById('confirm-delete-btn').addEventListener('click', async () => {
     if (deleteTargetId != null) {
@@ -234,15 +269,13 @@ async function exportData() {
     }
     exportToExcel(entries);
 }
+window.exportData = exportData;
 
 // --- Import ---
 async function importData(input) {
     const file = input.files[0];
     if (!file) return;
-
-    // Reset input so the same file can be selected again
     input.value = '';
-
     try {
         const { imported, skipped } = await importFromExcel(file);
         if (imported === 0) {
@@ -258,6 +291,7 @@ async function importData(input) {
         console.error(err);
     }
 }
+window.importData = importData;
 
 // --- Toast ---
 function showToast(message) {
@@ -284,7 +318,6 @@ function setDefaultDate() {
     document.getElementById('entry-date').value = today;
 }
 
-
 // --- Init ---
 async function init() {
     setDefaultDate();
@@ -292,10 +325,7 @@ async function init() {
     await updateReminderBanner();
     await updateMileageBadge();
 
-    // Register service worker
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js').catch(() => {});
     }
 }
-
-init();
