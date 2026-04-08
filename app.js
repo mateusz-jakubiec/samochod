@@ -1,6 +1,7 @@
 import { initAuth, login, logout } from './auth.js';
 import { addEntry, getAllEntries, getEntry, updateEntry, deleteEntry, getLatestMileage, getActiveReminders } from './db.js';
 import { exportToExcel, importFromExcel } from './export.js';
+import { scanInvoice } from './scanner.js';
 
 let currentView = 'history';
 let deleteTargetId = null;
@@ -47,7 +48,7 @@ function showView(name) {
         btn.classList.toggle('active', btn.dataset.view === name);
     });
 
-    document.getElementById('fab').classList.toggle('hidden', name === 'add');
+    document.getElementById('fab').classList.toggle('hidden', name === 'add' || name === 'scan');
 
     if (name === 'history') loadEntries();
     if (name === 'reminders') loadReminders();
@@ -55,6 +56,7 @@ function showView(name) {
         if (editingId === null) resetForm();
         document.getElementById('entry-description').focus();
     }
+    if (name === 'scan') resetScan();
 }
 window.showView = showView;
 
@@ -317,6 +319,102 @@ function setDefaultDate() {
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('entry-date').value = today;
 }
+
+// --- Scan ---
+function resetScan() {
+    document.getElementById('scan-file').value = '';
+    document.getElementById('scan-upload-area').classList.remove('hidden');
+    document.getElementById('scan-preview-container').classList.add('hidden');
+    document.getElementById('scan-spinner').classList.add('hidden');
+    document.getElementById('scan-result').classList.add('hidden');
+}
+
+document.getElementById('scan-file').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+        document.getElementById('scan-preview').src = ev.target.result;
+        document.getElementById('scan-upload-area').classList.add('hidden');
+        document.getElementById('scan-preview-container').classList.remove('hidden');
+        document.getElementById('scan-result').classList.add('hidden');
+        document.getElementById('scan-spinner').classList.add('hidden');
+    };
+    reader.readAsDataURL(file);
+});
+
+function readFileAsBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            const [header, base64] = reader.result.split(',');
+            const mediaType = header.match(/:(.*?);/)[1];
+            resolve({ base64, mediaType });
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
+async function analyzeScan() {
+    const file = document.getElementById('scan-file').files[0];
+    if (!file) return;
+
+    document.getElementById('scan-preview-container').classList.add('hidden');
+    document.getElementById('scan-spinner').classList.remove('hidden');
+
+    try {
+        const { base64, mediaType } = await readFileAsBase64(file);
+        const result = await scanInvoice(base64, mediaType);
+
+        document.getElementById('scan-date').value = result.date || new Date().toISOString().split('T')[0];
+        document.getElementById('scan-description').value = result.description || '';
+        document.getElementById('scan-parts').value = result.parts || '';
+        document.getElementById('scan-price').value = result.price || '';
+        document.getElementById('scan-mileage').value = '';
+        document.getElementById('scan-reminder').value = '';
+
+        document.getElementById('scan-spinner').classList.add('hidden');
+        document.getElementById('scan-result').classList.remove('hidden');
+    } catch (err) {
+        document.getElementById('scan-spinner').classList.add('hidden');
+        document.getElementById('scan-preview-container').classList.remove('hidden');
+        showToast('Blad analizy — sprobuj ponownie');
+        console.error(err);
+    }
+}
+window.analyzeScan = analyzeScan;
+
+async function saveScanEntry() {
+    const description = document.getElementById('scan-description').value.trim();
+    const mileageVal = document.getElementById('scan-mileage').value;
+
+    if (!description) { showToast('Opis jest wymagany'); return; }
+    if (!mileageVal) { showToast('Przebieg jest wymagany'); return; }
+
+    const entry = {
+        date: document.getElementById('scan-date').value,
+        description,
+        parts: document.getElementById('scan-parts').value.trim(),
+        price: parseFloat(document.getElementById('scan-price').value) || 0,
+        mileage: parseInt(mileageVal),
+        reminder_km: parseInt(document.getElementById('scan-reminder').value) || null
+    };
+
+    await addEntry(entry);
+    showToast('Zapisano!');
+    resetScan();
+    showView('history');
+    updateReminderBanner();
+    updateMileageBadge();
+}
+window.saveScanEntry = saveScanEntry;
+
+function cancelScan() {
+    resetScan();
+    showView('history');
+}
+window.cancelScan = cancelScan;
 
 // --- Init ---
 async function init() {

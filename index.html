@@ -116,6 +116,68 @@
             </form>
         </main>
 
+        <!-- View: Skanuj fakture -->
+        <main id="view-scan" class="view">
+            <div class="scan-container">
+                <div id="scan-upload-area" class="scan-upload-area" onclick="document.getElementById('scan-file').click()">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                        <circle cx="12" cy="13" r="4"/>
+                    </svg>
+                    <p>Dotknij aby wybrac zdjecie faktury</p>
+                    <p class="hint">Zdjecie lub galeria</p>
+                </div>
+                <input type="file" id="scan-file" accept="image/*" style="display:none">
+
+                <div id="scan-preview-container" class="hidden">
+                    <img id="scan-preview" class="scan-preview-img" alt="Podglad faktury">
+                    <button class="btn-secondary scan-change-btn" onclick="document.getElementById('scan-file').click()">Zmien zdjecie</button>
+                    <button id="scan-analyze-btn" class="btn-primary" onclick="analyzeScan()">Analizuj fakture</button>
+                </div>
+
+                <div id="scan-spinner" class="scan-spinner hidden">
+                    <div class="spinner"></div>
+                    <p>Analizuje fakture...</p>
+                </div>
+
+                <div id="scan-result" class="hidden">
+                    <h3 class="scan-result-title">Propozycja wpisu</h3>
+                    <p class="scan-result-hint">Sprawdz i uzupelnij dane przed zapisem</p>
+                    <div class="entry-form">
+                        <div class="form-group">
+                            <label>Data</label>
+                            <input type="date" id="scan-date">
+                        </div>
+                        <div class="form-group">
+                            <label>Opis *</label>
+                            <input type="text" id="scan-description" placeholder="np. Wymiana oleju i filtrow">
+                        </div>
+                        <div class="form-group">
+                            <label>Czesci</label>
+                            <input type="text" id="scan-parts" placeholder="np. Filtr oleju, olej 5W30">
+                        </div>
+                        <div class="form-group">
+                            <label>Cena (PLN)</label>
+                            <input type="number" id="scan-price" inputmode="decimal" step="0.01" min="0" placeholder="0.00">
+                        </div>
+                        <div class="form-group">
+                            <label>Przebieg (km) *</label>
+                            <input type="number" id="scan-mileage" inputmode="numeric" min="0" placeholder="Uzupelnij przebieg">
+                        </div>
+                        <div class="form-group">
+                            <label>Przypomnienie (km)</label>
+                            <input type="number" id="scan-reminder" inputmode="numeric" min="0" placeholder="np. 155000">
+                            <span class="helper">Nastepny serwis przy X km</span>
+                        </div>
+                        <div class="form-buttons">
+                            <button type="button" class="btn-secondary" onclick="cancelScan()">Anuluj</button>
+                            <button type="button" class="btn-primary" onclick="saveScanEntry()">Zapisz wpis</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
         <!-- View: Przypomnienia -->
         <main id="view-reminders" class="view">
             <div id="reminders-list" class="reminders-list">
@@ -144,6 +206,13 @@
                     <line x1="5" y1="12" x2="19" y2="12"/>
                 </svg>
                 <span>Dodaj</span>
+            </button>
+            <button class="nav-btn" data-view="scan" onclick="showView('scan')">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                    <circle cx="12" cy="13" r="4"/>
+                </svg>
+                <span>Skanuj</span>
             </button>
             <button class="nav-btn" data-view="reminders" onclick="showView('reminders')">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

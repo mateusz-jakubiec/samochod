@@ -1,5 +1,5 @@
 // Zmień tę wersję przy każdym deployu żeby wymusić odświeżenie cache
-const CACHE_VERSION = 'v4';
+const CACHE_VERSION = 'v5';
 const CACHE_NAME = `serwis-auta-${CACHE_VERSION}`;
 const ASSETS = [
     './',
@@ -8,6 +8,7 @@ const ASSETS = [
     './app.js',
     './db.js',
     './export.js',
+    './scanner.js',
     './manifest.json',
     './icons/icon-192.png',
     './icons/icon-512.png'
