@@ -1,5 +1,5 @@
 // Zmień tę wersję przy każdym deployu żeby wymusić odświeżenie cache
-const CACHE_VERSION = 'v7';
+const CACHE_VERSION = 'v8';
 const CACHE_NAME = `serwis-auta-${CACHE_VERSION}`;
 const ASSETS = [
     './',
@@ -37,6 +37,9 @@ self.addEventListener('activate', (e) => {
 // Fetch: network-first dla CDN, cache-first dla lokalnych plików
 self.addEventListener('fetch', (e) => {
     const url = new URL(e.request.url);
+
+    // POST i inne metody poza GET — nie cache'uj (np. wywołania Cloud Functions)
+    if (e.request.method !== 'GET') return;
 
     // CDN (SheetJS) — najpierw sieć, fallback na cache
     if (url.origin !== location.origin) {
