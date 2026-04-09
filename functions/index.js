@@ -37,7 +37,9 @@ exports.scanInvoice = onRequest(
         try {
             const idToken = authHeader.split('Bearer ')[1];
             await admin.auth().verifyIdToken(idToken);
-        } catch {
+            console.log('Token verified OK');
+        } catch (err) {
+            console.error('Token error:', err.message);
             res.status(401).json({ error: 'Nieprawidlowy token' });
             return;
         }
@@ -51,9 +53,10 @@ exports.scanInvoice = onRequest(
 
         try {
             const client = new Anthropic({ apiKey: anthropicApiKey.value() });
+            console.log('Calling Anthropic API...');
 
             const response = await client.messages.create({
-                model: 'claude-opus-4-5',
+                model: 'claude-3-haiku-20240307',
                 max_tokens: 1024,
                 messages: [
                     {
@@ -85,8 +88,8 @@ Jezeli dokument nie jest faktura ani dokumentem serwisowym, zwroc wszystkie pola
             if (!match) throw new Error('Brak JSON w odpowiedzi');
             res.json(JSON.parse(match[0]));
         } catch (err) {
-            console.error('Claude error:', err);
-            res.status(500).json({ error: 'Blad analizy' });
+            console.error('Claude error:', err.message, err.status, err.error);
+            res.status(500).json({ error: 'Blad analizy', details: err.message });
         }
     }
 );
