@@ -8,7 +8,10 @@ setGlobalOptions({ maxInstances: 5 });
 const anthropicApiKey = defineSecret('ANTHROPIC_API_KEY');
 
 exports.scanInvoice = onCall(
-    { secrets: [anthropicApiKey] },
+    {
+        secrets: [anthropicApiKey],
+        cors: true,
+    },
     async (request) => {
         // Tylko zalogowany użytkownik może wywołać tę funkcję
         if (!request.auth) {
