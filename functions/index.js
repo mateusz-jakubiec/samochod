@@ -1,45 +1,71 @@
-const { onCall, HttpsError } = require('firebase-functions/v2/https');
+const { onRequest } = require('firebase-functions/v2/https');
 const { setGlobalOptions } = require('firebase-functions');
 const { defineSecret } = require('firebase-functions/params');
+const admin = require('firebase-admin');
 const Anthropic = require('@anthropic-ai/sdk');
 
+admin.initializeApp();
 setGlobalOptions({ maxInstances: 5 });
 
 const anthropicApiKey = defineSecret('ANTHROPIC_API_KEY');
 
-exports.scanInvoice = onCall(
-    {
-        secrets: [anthropicApiKey],
-        cors: true,
-    },
-    async (request) => {
-        // Tylko zalogowany użytkownik może wywołać tę funkcję
-        if (!request.auth) {
-            throw new HttpsError('unauthenticated', 'Musisz byc zalogowany');
+exports.scanInvoice = onRequest(
+    { secrets: [anthropicApiKey] },
+    async (req, res) => {
+        // CORS headers
+        res.set('Access-Control-Allow-Origin', '*');
+        res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+        res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+        if (req.method === 'OPTIONS') {
+            res.status(204).send('');
+            return;
         }
 
-        const { base64Image, mediaType } = request.data;
+        if (req.method !== 'POST') {
+            res.status(405).send('Method Not Allowed');
+            return;
+        }
+
+        // Weryfikacja Firebase Auth token
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            res.status(401).json({ error: 'Musisz byc zalogowany' });
+            return;
+        }
+
+        try {
+            const idToken = authHeader.split('Bearer ')[1];
+            await admin.auth().verifyIdToken(idToken);
+        } catch {
+            res.status(401).json({ error: 'Nieprawidlowy token' });
+            return;
+        }
+
+        const { base64Image, mediaType } = req.body;
 
         if (!base64Image || !mediaType) {
-            throw new HttpsError('invalid-argument', 'Brak obrazu');
+            res.status(400).json({ error: 'Brak obrazu' });
+            return;
         }
 
-        const client = new Anthropic({ apiKey: anthropicApiKey.value() });
+        try {
+            const client = new Anthropic({ apiKey: anthropicApiKey.value() });
 
-        const response = await client.messages.create({
-            model: 'claude-opus-4-5',
-            max_tokens: 1024,
-            messages: [
-                {
-                    role: 'user',
-                    content: [
-                        {
-                            type: 'image',
-                            source: { type: 'base64', media_type: mediaType, data: base64Image }
-                        },
-                        {
-                            type: 'text',
-                            text: `Przeanalizuj ten dokument serwisowy lub fakture za naprawe samochodu.
+            const response = await client.messages.create({
+                model: 'claude-opus-4-5',
+                max_tokens: 1024,
+                messages: [
+                    {
+                        role: 'user',
+                        content: [
+                            {
+                                type: 'image',
+                                source: { type: 'base64', media_type: mediaType, data: base64Image }
+                            },
+                            {
+                                type: 'text',
+                                text: `Przeanalizuj ten dokument serwisowy lub fakture za naprawe samochodu.
 Wyodrebnij nastepujace dane i zwroc je jako JSON (bez zadnego innego tekstu):
 {
   "date": "YYYY-MM-DD lub null jesli nie ma",
@@ -48,20 +74,19 @@ Wyodrebnij nastepujace dane i zwroc je jako JSON (bez zadnego innego tekstu):
   "price": liczba lub null
 }
 Jezeli dokument nie jest faktura ani dokumentem serwisowym, zwroc wszystkie pola jako null.`
-                        }
-                    ]
-                }
-            ]
-        });
+                            }
+                        ]
+                    }
+                ]
+            });
 
-        const text = response.content[0].text.trim();
-
-        try {
+            const text = response.content[0].text.trim();
             const match = text.match(/\{[\s\S]*\}/);
             if (!match) throw new Error('Brak JSON w odpowiedzi');
-            return JSON.parse(match[0]);
-        } catch {
-            throw new HttpsError('internal', 'Nie udalo sie sparsowac odpowiedzi Claude');
+            res.json(JSON.parse(match[0]));
+        } catch (err) {
+            console.error('Claude error:', err);
+            res.status(500).json({ error: 'Blad analizy' });
         }
     }
 );
