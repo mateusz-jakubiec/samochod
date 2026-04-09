@@ -445,15 +445,28 @@ function resetScan() {
 document.getElementById('scan-file').addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-        document.getElementById('scan-preview').src = ev.target.result;
-        document.getElementById('scan-upload-area').classList.add('hidden');
-        document.getElementById('scan-preview-container').classList.remove('hidden');
-        document.getElementById('scan-result').classList.add('hidden');
-        document.getElementById('scan-spinner').classList.add('hidden');
-    };
-    reader.readAsDataURL(file);
+
+    const isPdf = file.type === 'application/pdf';
+    const previewImg = document.getElementById('scan-preview');
+    const pdfInfo = document.getElementById('scan-pdf-info');
+    const pdfName = document.getElementById('scan-pdf-name');
+
+    document.getElementById('scan-upload-area').classList.add('hidden');
+    document.getElementById('scan-preview-container').classList.remove('hidden');
+    document.getElementById('scan-result').classList.add('hidden');
+    document.getElementById('scan-spinner').classList.add('hidden');
+
+    if (isPdf) {
+        previewImg.classList.add('hidden');
+        pdfInfo.classList.remove('hidden');
+        pdfName.textContent = file.name;
+    } else {
+        pdfInfo.classList.add('hidden');
+        previewImg.classList.remove('hidden');
+        const reader = new FileReader();
+        reader.onload = (ev) => { previewImg.src = ev.target.result; };
+        reader.readAsDataURL(file);
+    }
 });
 
 function readFileAsBase64(file) {

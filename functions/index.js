@@ -63,7 +63,7 @@ exports.scanInvoice = onRequest(
                         role: 'user',
                         content: [
                             {
-                                type: 'image',
+                                type: mediaType === 'application/pdf' ? 'document' : 'image',
                                 source: { type: 'base64', media_type: mediaType, data: base64Image }
                             },
                             {

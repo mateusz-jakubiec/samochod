@@ -782,6 +782,22 @@ body {
     background: #000;
 }
 
+.scan-pdf-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 24px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: #f8fafe;
+    color: var(--text-secondary);
+    font-size: 14px;
+    text-align: center;
+    word-break: break-all;
+}
+.scan-pdf-info svg { color: #e53935; }
+
 .scan-change-btn {
     width: 100%;
     margin-top: 4px;

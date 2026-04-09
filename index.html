@@ -135,14 +135,21 @@
                         <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
                         <circle cx="12" cy="13" r="4"/>
                     </svg>
-                    <p>Dotknij aby wybrac zdjecie faktury</p>
-                    <p class="hint">Zdjecie lub galeria</p>
+                    <p>Dotknij aby wybrac zdjecie lub PDF faktury</p>
+                    <p class="hint">Zdjecie, galeria lub plik PDF</p>
                 </div>
-                <input type="file" id="scan-file" accept="image/*" style="display:none">
+                <input type="file" id="scan-file" accept="image/*,.pdf" style="display:none">
 
                 <div id="scan-preview-container" class="hidden">
                     <img id="scan-preview" class="scan-preview-img" alt="Podglad faktury">
-                    <button class="btn-secondary scan-change-btn" onclick="document.getElementById('scan-file').click()">Zmien zdjecie</button>
+                    <div id="scan-pdf-info" class="scan-pdf-info hidden">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                        </svg>
+                        <span id="scan-pdf-name"></span>
+                    </div>
+                    <button class="btn-secondary scan-change-btn" onclick="document.getElementById('scan-file').click()">Zmien plik</button>
                     <button id="scan-analyze-btn" class="btn-primary" onclick="analyzeScan()">Analizuj fakture</button>
                 </div>
 
