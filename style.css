@@ -710,27 +710,36 @@ body {
     border-collapse: collapse;
     font-size: 13px;
     margin-bottom: 2px;
+    table-layout: fixed;
 }
 .items-table td {
     padding: 4px 0;
     border-bottom: 1px solid #f5f5f5;
     color: #444;
-    vertical-align: top;
+    vertical-align: middle;
 }
 .items-table tr:last-child td { border-bottom: none; }
-.col-name { width: 100%; }
+.col-name {
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding-right: 6px;
+}
 .col-qty {
+    width: 52px;
     white-space: nowrap;
     color: #aaa;
-    padding: 4px 8px;
     font-size: 12px;
     text-align: right;
+    padding: 0 6px;
 }
 .col-price {
+    width: 80px;
     white-space: nowrap;
     text-align: right;
     font-weight: 600;
-    padding-left: 8px;
+    padding-left: 4px;
 }
 .col-price.svc { color: #1565c0; }
 .col-price.prt { color: #2e7d32; }
