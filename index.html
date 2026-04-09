@@ -92,13 +92,24 @@
                     <label for="entry-description">Opis *</label>
                     <input type="text" id="entry-description" placeholder="np. Wymiana oleju" required>
                 </div>
-                <div class="form-group">
-                    <label for="entry-parts">Czesci</label>
-                    <input type="text" id="entry-parts" placeholder="np. Filtr oleju, olej 5W30">
+                <div class="section-label services-label">⚙️ Usługi / robocizna</div>
+                <div class="row-header">
+                    <span>Nazwa</span><span class="rh-qty">Ilość</span><span class="rh-price">Cena</span><span></span>
                 </div>
+                <div id="entry-services-list" class="parts-fields"></div>
+                <button type="button" class="btn-add-part btn-add-service" onclick="addItemRow('entry-services-list', 'Nazwa usługi')">+ Dodaj usługę</button>
+
+                <div class="section-label parts-label">🔧 Części</div>
+                <div class="row-header">
+                    <span>Nazwa</span><span class="rh-qty">Ilość</span><span class="rh-price">Cena</span><span></span>
+                </div>
+                <div id="entry-parts-list" class="parts-fields"></div>
+                <button type="button" class="btn-add-part btn-add-part-item" onclick="addItemRow('entry-parts-list', 'Nazwa części')">+ Dodaj część</button>
+
                 <div class="form-group">
-                    <label for="entry-price">Cena (PLN)</label>
+                    <label for="entry-price">Cena łącznie (PLN)</label>
                     <input type="number" id="entry-price" inputmode="decimal" step="0.01" min="0" placeholder="0.00">
+                    <span class="helper">Uzupełniana automatycznie</span>
                 </div>
                 <div class="form-group">
                     <label for="entry-mileage">Przebieg (km) *</label>
@@ -152,13 +163,25 @@
                             <label>Opis *</label>
                             <input type="text" id="scan-description" placeholder="np. Wymiana oleju i filtrow">
                         </div>
-                        <div class="form-group">
-                            <label>Czesci</label>
-                            <input type="text" id="scan-parts" placeholder="np. Filtr oleju, olej 5W30">
+
+                        <div class="section-label services-label">⚙️ Usługi / robocizna</div>
+                        <div class="row-header">
+                            <span>Nazwa</span><span class="rh-qty">Ilość</span><span class="rh-price">Cena</span><span></span>
                         </div>
-                        <div class="form-group">
-                            <label>Cena (PLN)</label>
+                        <div id="scan-services-list" class="parts-fields"></div>
+                        <button type="button" class="btn-add-part btn-add-service" onclick="addItemRow('scan-services-list', 'Nazwa usługi')">+ Dodaj usługę</button>
+
+                        <div class="section-label parts-label">🔧 Części</div>
+                        <div class="row-header">
+                            <span>Nazwa</span><span class="rh-qty">Ilość</span><span class="rh-price">Cena</span><span></span>
+                        </div>
+                        <div id="scan-parts-list" class="parts-fields"></div>
+                        <button type="button" class="btn-add-part btn-add-part-item" onclick="addItemRow('scan-parts-list', 'Nazwa części')">+ Dodaj część</button>
+
+                        <div class="form-group" style="margin-top:14px;">
+                            <label>Cena łącznie (PLN)</label>
                             <input type="number" id="scan-price" inputmode="decimal" step="0.01" min="0" placeholder="0.00">
+                            <span class="helper">Uzupełniana automatycznie</span>
                         </div>
                         <div class="form-group">
                             <label>Przebieg (km) *</label>

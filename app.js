@@ -88,7 +88,14 @@ async function loadEntries() {
         return;
     }
 
-    list.innerHTML = entries.map(e => `
+    list.innerHTML = entries.map(e => {
+        let itemsHtml = '';
+        if (Array.isArray(e.services) || Array.isArray(e.parts)) {
+            itemsHtml = renderItemsSection(e.services, 'service') + renderItemsSection(e.parts, 'part');
+        } else if (e.parts) {
+            itemsHtml = `<div style="font-size:13px;color:#666;padding:6px 0">🔧 ${escapeHtml(e.parts)}</div>`;
+        }
+        return `
         <div class="entry-card" data-id="${e.id}">
             <div class="entry-card-header">
                 <span class="entry-date">${formatDate(e.date)}</span>
@@ -98,14 +105,14 @@ async function loadEntries() {
                 </div>
             </div>
             <div class="entry-description">${escapeHtml(e.description)}</div>
-            <div class="entry-details">
-                ${e.parts ? `<span class="entry-detail">🔧 ${escapeHtml(e.parts)}</span>` : ''}
-                ${e.price ? `<span class="entry-detail"><strong>${formatPrice(e.price)}</strong></span>` : ''}
-                <span class="entry-detail">${formatMileage(e.mileage)}</span>
+            ${itemsHtml}
+            <div class="entry-footer">
+                ${e.price ? `<strong>${formatPrice(e.price)}</strong>` : ''}
+                <span>${formatMileage(e.mileage)}</span>
+                ${e.reminder_km ? `<span class="entry-reminder-tag">🔔 ${formatMileage(e.reminder_km)}</span>` : ''}
             </div>
-            ${e.reminder_km ? `<span class="entry-reminder-tag">Przypomnienie: ${formatMileage(e.reminder_km)}</span>` : ''}
-        </div>
-    `).join('');
+        </div>`;
+    }).join('');
 }
 
 // --- Render reminders ---
@@ -182,11 +189,18 @@ async function updateMileageBadge() {
 document.getElementById('entry-form').addEventListener('submit', async (e) => {
     e.preventDefault();
 
+    const services = collectItems('entry-services-list');
+    const parts = collectItems('entry-parts-list');
+
+    // Wylicz cenę z pozycji, lub weź wpisaną ręcznie
+    const priceVal = parseFloat(document.getElementById('entry-price').value) || 0;
+
     const entry = {
         date: document.getElementById('entry-date').value,
         description: document.getElementById('entry-description').value.trim(),
-        parts: document.getElementById('entry-parts').value.trim(),
-        price: parseFloat(document.getElementById('entry-price').value) || 0,
+        services,
+        parts,
+        price: priceVal,
         mileage: parseInt(document.getElementById('entry-mileage').value),
         reminder_km: parseInt(document.getElementById('entry-reminder').value) || null
     };
@@ -213,12 +227,24 @@ async function openEditForm(id) {
     editingId = id;
     document.getElementById('entry-date').value = entry.date;
     document.getElementById('entry-description').value = entry.description;
-    document.getElementById('entry-parts').value = entry.parts || '';
     document.getElementById('entry-price').value = entry.price || '';
     document.getElementById('entry-mileage').value = entry.mileage;
     document.getElementById('entry-reminder').value = entry.reminder_km || '';
     document.getElementById('form-title').textContent = 'Edytuj wpis';
     document.getElementById('form-submit-btn').textContent = 'Zaktualizuj';
+
+    // Populate services
+    populateItemList('entry-services-list', entry.services || []);
+
+    // Populate parts — obsługa starego formatu (string)
+    if (Array.isArray(entry.parts)) {
+        populateItemList('entry-parts-list', entry.parts);
+    } else if (typeof entry.parts === 'string' && entry.parts) {
+        const legacyParts = entry.parts.split(',').map(p => ({ name: p.trim(), qty: 1, price: 0 })).filter(p => p.name);
+        populateItemList('entry-parts-list', legacyParts);
+    } else {
+        clearItemList('entry-parts-list');
+    }
 
     showView('add');
 }
@@ -230,6 +256,8 @@ function resetForm() {
     setDefaultDate();
     document.getElementById('form-title').textContent = 'Dodaj wpis';
     document.getElementById('form-submit-btn').textContent = 'Zapisz';
+    clearItemList('entry-services-list');
+    clearItemList('entry-parts-list');
 }
 
 function cancelForm() {
@@ -320,6 +348,89 @@ function setDefaultDate() {
     document.getElementById('entry-date').value = today;
 }
 
+// --- Item rows (services / parts) ---
+function escapeAttr(text) {
+    return String(text).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function createItemRow(name = '', qty = 1, price = '') {
+    const div = document.createElement('div');
+    div.className = 'part-row';
+    div.innerHTML = `
+        <input type="text" class="item-name" value="${escapeAttr(name)}" placeholder="Nazwa" oninput="recalcPrice(this)">
+        <input type="number" class="item-qty" value="${qty}" min="1" step="1" style="text-align:center" oninput="recalcPrice(this)">
+        <input type="number" class="item-price" value="${price}" placeholder="0.00" step="0.01" min="0" style="text-align:right" oninput="recalcPrice(this)">
+        <button type="button" class="part-remove-btn" onclick="this.closest('.part-row').remove(); recalcPrice(this)" title="Usun">&#x2715;</button>`;
+    return div;
+}
+
+function recalcPrice(el) {
+    // find the form context (entry or scan)
+    const form = el ? el.closest('form, .entry-form, #view-add, #view-scan') : null;
+    const prefix = form && form.id === 'entry-form' ? 'entry' :
+                   (form && form.closest('#view-scan')) ? 'scan' : null;
+    if (!prefix) return;
+    recalcPriceFor(prefix);
+}
+window.recalcPrice = recalcPrice;
+
+function recalcPriceFor(prefix) {
+    const prices = [
+        ...document.querySelectorAll(`#${prefix}-services-list .item-price`),
+        ...document.querySelectorAll(`#${prefix}-parts-list .item-price`)
+    ].map(el => parseFloat(el.value) || 0);
+    const total = prices.reduce((a, b) => a + b, 0);
+    const priceEl = document.getElementById(`${prefix}-price`);
+    if (priceEl) priceEl.value = total > 0 ? total.toFixed(2) : '';
+}
+
+function addItemRow(containerId, placeholder) {
+    const container = document.getElementById(containerId);
+    const row = createItemRow('', 1, '');
+    row.querySelector('.item-name').placeholder = placeholder;
+    container.appendChild(row);
+    row.querySelector('input').focus();
+    // recalc for the containing form
+    const prefix = containerId.startsWith('entry') ? 'entry' : 'scan';
+    recalcPriceFor(prefix);
+}
+window.addItemRow = addItemRow;
+
+function collectItems(containerId) {
+    return [...document.querySelectorAll(`#${containerId} .part-row`)]
+        .map(row => ({
+            name: row.querySelector('.item-name').value.trim(),
+            qty: parseInt(row.querySelector('.item-qty').value) || 1,
+            price: parseFloat(row.querySelector('.item-price').value) || 0,
+        }))
+        .filter(item => item.name);
+}
+
+function populateItemList(containerId, items) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+    (items || []).forEach(item => container.appendChild(createItemRow(item.name, item.qty || 1, item.price || '')));
+}
+
+function clearItemList(containerId) {
+    document.getElementById(containerId).innerHTML = '';
+}
+
+function renderItemsSection(items, type) {
+    if (!items || items.length === 0) return '';
+    const isService = type === 'service';
+    const label = isService ? '⚙️ Usługi' : '🔧 Części';
+    const cls = isService ? 'svc' : 'prt';
+    const rows = items.map(item => {
+        const qtyCell = `<td class="col-qty">${(item.qty && item.qty > 1) ? item.qty + ' szt.' : '1 szt.'}</td>`;
+        const priceCell = item.price
+            ? `<td class="col-price ${cls}">${formatPrice(item.price)}</td>`
+            : `<td class="col-price">—</td>`;
+        return `<tr><td class="col-name">${escapeHtml(item.name)}</td>${qtyCell}${priceCell}</tr>`;
+    }).join('');
+    return `<div class="card-section-label ${cls}">${label}</div><table class="items-table">${rows}</table>`;
+}
+
 // --- Scan ---
 function resetScan() {
     document.getElementById('scan-file').value = '';
@@ -327,6 +438,8 @@ function resetScan() {
     document.getElementById('scan-preview-container').classList.add('hidden');
     document.getElementById('scan-spinner').classList.add('hidden');
     document.getElementById('scan-result').classList.add('hidden');
+    clearItemList('scan-services-list');
+    clearItemList('scan-parts-list');
 }
 
 document.getElementById('scan-file').addEventListener('change', (e) => {
@@ -367,10 +480,22 @@ async function analyzeScan() {
         const { base64, mediaType } = await readFileAsBase64(file);
         const result = await scanInvoice(base64, mediaType);
 
+        // Populate services
+        const services = Array.isArray(result.services) ? result.services.filter(i => i && i.name) : [];
+        populateItemList('scan-services-list', services);
+
+        // Populate parts
+        const parts = Array.isArray(result.parts) ? result.parts.filter(i => i && i.name) :
+                      Array.isArray(result.items) ? result.items.filter(i => i && i.name) : [];
+        populateItemList('scan-parts-list', parts);
+
         document.getElementById('scan-date').value = result.date || new Date().toISOString().split('T')[0];
         document.getElementById('scan-description').value = result.description || '';
-        document.getElementById('scan-parts').value = result.parts || '';
-        document.getElementById('scan-price').value = result.price || '';
+        document.getElementById('scan-price').value = result.total_price || '';
+
+        // Recalc from items if no total_price
+        if (!result.total_price) recalcPriceFor('scan');
+
         document.getElementById('scan-mileage').value = '';
         document.getElementById('scan-reminder').value = '';
 
@@ -395,7 +520,8 @@ async function saveScanEntry() {
     const entry = {
         date: document.getElementById('scan-date').value,
         description,
-        parts: document.getElementById('scan-parts').value.trim(),
+        services: collectItems('scan-services-list'),
+        parts: collectItems('scan-parts-list'),
         price: parseFloat(document.getElementById('scan-price').value) || 0,
         mileage: parseInt(mileageVal),
         reminder_km: parseInt(document.getElementById('scan-reminder').value) || null

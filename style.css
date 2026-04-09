@@ -219,24 +219,18 @@ body {
     margin-bottom: 8px;
 }
 
-.entry-details {
+.entry-footer {
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px 16px;
+    gap: 12px;
     font-size: 13px;
-    color: var(--text-secondary);
-}
-
-.entry-detail {
-    display: flex;
+    color: #666;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
     align-items: center;
-    gap: 4px;
+    flex-wrap: wrap;
 }
-
-.entry-detail strong {
-    color: var(--text);
-    font-weight: 600;
-}
+.entry-footer strong { color: var(--text); font-size: 14px; }
 
 .entry-reminder-tag {
     display: inline-block;
@@ -245,7 +239,6 @@ body {
     font-size: 11px;
     padding: 2px 8px;
     border-radius: 8px;
-    margin-top: 8px;
     font-weight: 500;
 }
 
@@ -562,6 +555,185 @@ body {
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
 }
+
+/* ---- Sekcje usług i części (formularz) ---- */
+.section-label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    padding: 12px 0 6px;
+    margin-top: 4px;
+}
+.services-label { color: #1565c0; }
+.parts-label { color: #2e7d32; margin-top: 8px; }
+
+.row-header {
+    display: grid;
+    grid-template-columns: 1fr 52px 80px 32px;
+    gap: 5px;
+    margin-bottom: 3px;
+}
+.row-header span {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #bbb;
+    padding: 0 4px;
+}
+.rh-qty { text-align: center; }
+.rh-price { text-align: right; }
+
+.parts-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin-bottom: 8px;
+}
+
+.part-row {
+    display: grid;
+    grid-template-columns: 1fr 52px 80px 32px;
+    gap: 5px;
+    align-items: center;
+}
+
+.part-row input {
+    border: 1.5px solid #dde1ea;
+    border-radius: 10px;
+    padding: 9px 8px;
+    font-size: 13px;
+    font-family: inherit;
+    color: #1a1a2e;
+    background: #fafbff;
+    width: 100%;
+    min-width: 0;
+}
+.part-row input:focus {
+    outline: none;
+    border-color: #3a57c5;
+    background: #fff;
+}
+.item-qty { text-align: center; }
+.item-price { text-align: right; }
+
+.part-remove-btn {
+    background: none;
+    border: 1.5px solid #ffd0d0;
+    border-radius: 8px;
+    color: #e53935;
+    font-size: 13px;
+    width: 32px;
+    height: 36px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    flex-shrink: 0;
+}
+.part-remove-btn:active { background: #fff0f0; }
+
+.btn-add-part {
+    background: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: inherit;
+    padding: 8px 0;
+    width: 100%;
+    cursor: pointer;
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+.btn-add-service { border: 1.5px dashed #90bfff; color: #1565c0; }
+.btn-add-service:active { background: #e8f0ff; }
+.btn-add-part-item { border: 1.5px dashed #81c784; color: #2e7d32; }
+.btn-add-part-item:active { background: #e8f5e9; }
+
+/* Kolorowanie wierszy wg sekcji */
+#entry-services-list .part-row input,
+#scan-services-list .part-row input {
+    border-color: #bbdefb;
+    background: #f0f6ff;
+}
+#entry-services-list .part-row input:focus,
+#scan-services-list .part-row input:focus {
+    border-color: #1565c0;
+    background: #fff;
+}
+#entry-services-list .part-remove-btn,
+#scan-services-list .part-remove-btn {
+    border-color: #bbdefb;
+    color: #1565c0;
+}
+
+#entry-parts-list .part-row input,
+#scan-parts-list .part-row input {
+    border-color: #c8e6c9;
+    background: #f2faf2;
+}
+#entry-parts-list .part-row input:focus,
+#scan-parts-list .part-row input:focus {
+    border-color: #2e7d32;
+    background: #fff;
+}
+#entry-parts-list .part-remove-btn,
+#scan-parts-list .part-remove-btn {
+    border-color: #c8e6c9;
+    color: #2e7d32;
+}
+
+/* ---- Karta wpisu — nowe sekcje ---- */
+.card-section-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 7px 0 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.card-section-label.svc {
+    color: #1565c0;
+    border-top: 1px solid #e8f0ff;
+    margin-top: 4px;
+}
+.card-section-label.prt {
+    color: #2e7d32;
+    border-top: 1px solid #e8f5e8;
+    margin-top: 6px;
+}
+
+.items-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-bottom: 2px;
+}
+.items-table td {
+    padding: 4px 0;
+    border-bottom: 1px solid #f5f5f5;
+    color: #444;
+    vertical-align: top;
+}
+.items-table tr:last-child td { border-bottom: none; }
+.col-name { width: 100%; }
+.col-qty {
+    white-space: nowrap;
+    color: #aaa;
+    padding: 4px 8px;
+    font-size: 12px;
+    text-align: right;
+}
+.col-price {
+    white-space: nowrap;
+    text-align: right;
+    font-weight: 600;
+    padding-left: 8px;
+}
+.col-price.svc { color: #1565c0; }
+.col-price.prt { color: #2e7d32; }
 
 /* Scan view */
 .scan-container {

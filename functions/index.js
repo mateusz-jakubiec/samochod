@@ -57,7 +57,7 @@ exports.scanInvoice = onRequest(
 
             const response = await client.messages.create({
                 model: 'claude-3-haiku-20240307',
-                max_tokens: 1024,
+                max_tokens: 2048,
                 messages: [
                     {
                         role: 'user',
@@ -69,14 +69,25 @@ exports.scanInvoice = onRequest(
                             {
                                 type: 'text',
                                 text: `Przeanalizuj ten dokument serwisowy lub fakture za naprawe samochodu.
-Wyodrebnij nastepujace dane i zwroc je jako JSON (bez zadnego innego tekstu):
+Zwroc WYLACZNIE JSON bez zadnego innego tekstu, bez markdown:
 {
-  "date": "YYYY-MM-DD lub null jesli nie ma",
-  "description": "krotki opis naprawy np. Wymiana oleju i filtrow",
-  "parts": "lista czesci oddzielona przecinkami lub pusty string",
-  "price": liczba lub null
+  "date": "YYYY-MM-DD lub null",
+  "description": "ogolny opis np. 'Wymiana oleju i filtrow'",
+  "services": [
+    {"name": "nazwa uslugi/robocizny", "qty": 1, "price": liczba lub null}
+  ],
+  "parts": [
+    {"name": "nazwa czesci", "qty": liczba, "price": liczba lub null}
+  ],
+  "total_price": liczba lub null
 }
-Jezeli dokument nie jest faktura ani dokumentem serwisowym, zwroc wszystkie pola jako null.`
+Zasady:
+- services: uslugi i robocizna (np. diagnostyka, wymiana, przeglad)
+- parts: czesci i materialy (np. olej, filtr, klocki)
+- qty: ilosc sztuk (domyslnie 1)
+- price: cena danej pozycji jako liczba bez symbolu waluty
+- total_price: laczna kwota do zaplaty
+- Jezeli dokument nie jest faktura serwisowa: date i description jako null, services i parts jako []`
                             }
                         ]
                     }
