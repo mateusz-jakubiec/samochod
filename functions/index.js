@@ -68,26 +68,35 @@ exports.scanInvoice = onRequest(
                             },
                             {
                                 type: 'text',
-                                text: `Przeanalizuj ten dokument serwisowy lub fakture za naprawe samochodu.
+                                text: `Przeanalizuj fakture VAT za naprawe samochodu.
 Zwroc WYLACZNIE JSON bez zadnego innego tekstu, bez markdown:
 {
   "date": "YYYY-MM-DD lub null",
   "description": "ogolny opis np. 'Wymiana oleju i filtrow'",
   "services": [
-    {"name": "nazwa uslugi/robocizny", "qty": 1, "price": liczba lub null}
+    {"name": "nazwa uslugi", "qty": 1, "price": liczba lub null}
   ],
   "parts": [
     {"name": "nazwa czesci", "qty": liczba, "price": liczba lub null}
   ],
   "total_price": liczba lub null
 }
-Zasady klasyfikacji:
-- services (TYLKO robocizna i uslugi): diagnostyka, przeglad, wymiana (sama czynnosc), mycie, naprawa - czyli praca mechanika. Przyklad: "Wymiana oleju" - TAK. "Olej silnikowy" - NIE.
-- parts (fizyczne produkty): czesci, oleje, plyny, filtry, uszczelki, sruby, materialy eksploatacyjne - wszystko co jest fizycznym przedmiotem lub materialem. Przyklad: "Filtr oleju" - TAK. "Diagnostyka komputerowa" - NIE.
-- Jesli pozycja to jednoczesnie usluga i material (np. "Wymiana oleju + olej"), rozdziel je na dwie osobne pozycje.
-- qty: ilosc sztuk (domyslnie 1)
-- price: cena BRUTTO (z VAT) danej pozycji jako liczba bez symbolu waluty. Jezeli na fakturze sa kolumny netto i brutto, zawsze bierz BRUTTO.
-- total_price: laczna kwota BRUTTO do zaplaty (kwota z dolu faktury)
+
+SKAD BRAC DANE:
+- Czytaj TYLKO z tabeli pozycji faktury (wiersze z Lp. 1, 2, 3...). Ignoruj notatki odreczne, opisy pod tabelka, komentarze.
+- Przepisz WSZYSTKIE wiersze z tabeli - nie pomijaj zadnego.
+
+CENY - BARDZO WAZNE:
+- Jezeli faktura ma kolumny: uzyj wartosci z kolumny "Wartosc Brutto" lub "Brutto" (ostatnia kolumna, najwyzsza kwota w wierszu).
+- NIGDY nie bierz wartosci z kolumny "Cena jedn. Netto", "Wartosc Netto" ani "Netto".
+- price = Wartosc Brutto dla danego wiersza (ilosc * cena brutto), nie cena jednostkowa.
+- total_price = laczna suma brutto z dolu faktury (np. "Wartosc Faktury VAT" lub "Razem Brutto").
+
+KLASYFIKACJA:
+- services: TYLKO praca mechanika - robocizna, diagnostyka, przeglad, naprawa, usprawnienie, serwis (sama czynnosc bez materialu). Przyklad TAK: "Usprawnienie pojazdu", "Diagnostyka komputerowa". NIE: "Olej", "Filtr", "Zbiornik".
+- parts: fizyczne przedmioty i materialy - czesci, oleje, plyny, filtry, uszczelki, sruby, zbiorniki, klocki, tarcze. Przyklad TAK: "Filtr oleju", "Zbiornik plynow", "Tarcza hamulcowa". NIE: "Wymiana", "Naprawa".
+- qty: ilosc z faktury (moze byc ulamkowa np. 0.4, 5.3)
+
 - Jezeli dokument nie jest faktura serwisowa: date i description jako null, services i parts jako []`
                             }
                         ]
