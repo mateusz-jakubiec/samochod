@@ -10,7 +10,7 @@ setGlobalOptions({ maxInstances: 5 });
 const anthropicApiKey = defineSecret('ANTHROPIC_API_KEY');
 
 exports.scanInvoice = onRequest(
-    { secrets: [anthropicApiKey] },
+    { secrets: [anthropicApiKey], invoker: 'public' },
     async (req, res) => {
         // CORS headers
         res.set('Access-Control-Allow-Origin', '*');
