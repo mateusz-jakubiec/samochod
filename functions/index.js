@@ -81,12 +81,13 @@ Zwroc WYLACZNIE JSON bez zadnego innego tekstu, bez markdown:
   ],
   "total_price": liczba lub null
 }
-Zasady:
-- services: uslugi i robocizna (np. diagnostyka, wymiana, przeglad)
-- parts: czesci i materialy (np. olej, filtr, klocki)
+Zasady klasyfikacji:
+- services (TYLKO robocizna i uslugi): diagnostyka, przeglad, wymiana (sama czynnosc), mycie, naprawa - czyli praca mechanika. Przyklad: "Wymiana oleju" - TAK. "Olej silnikowy" - NIE.
+- parts (fizyczne produkty): czesci, oleje, plyny, filtry, uszczelki, sruby, materialy eksploatacyjne - wszystko co jest fizycznym przedmiotem lub materialem. Przyklad: "Filtr oleju" - TAK. "Diagnostyka komputerowa" - NIE.
+- Jesli pozycja to jednoczesnie usluga i material (np. "Wymiana oleju + olej"), rozdziel je na dwie osobne pozycje.
 - qty: ilosc sztuk (domyslnie 1)
-- price: cena danej pozycji jako liczba bez symbolu waluty
-- total_price: laczna kwota do zaplaty
+- price: cena BRUTTO (z VAT) danej pozycji jako liczba bez symbolu waluty. Jezeli na fakturze sa kolumny netto i brutto, zawsze bierz BRUTTO.
+- total_price: laczna kwota BRUTTO do zaplaty (kwota z dolu faktury)
 - Jezeli dokument nie jest faktura serwisowa: date i description jako null, services i parts jako []`
                             }
                         ]
