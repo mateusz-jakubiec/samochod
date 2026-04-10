@@ -360,9 +360,17 @@ function createItemRow(name = '', qty = 1, price = '') {
         <input type="text" class="item-name" value="${escapeAttr(name)}" placeholder="Nazwa" oninput="recalcPrice(this)">
         <input type="number" class="item-qty" value="${qty}" min="1" step="1" style="text-align:center" oninput="recalcPrice(this)">
         <input type="number" class="item-price" value="${price}" placeholder="0.00" step="0.01" min="0" style="text-align:right" oninput="recalcPrice(this)">
-        <button type="button" class="part-remove-btn" onclick="this.closest('.part-row').remove(); recalcPrice(this)" title="Usun">&#x2715;</button>`;
+        <button type="button" class="part-remove-btn" onclick="removeItemRow(this)" title="Usun">&#x2715;</button>`;
     return div;
 }
+
+function removeItemRow(btn) {
+    const container = btn.closest('.parts-fields');
+    const prefix = container.id.startsWith('entry') ? 'entry' : 'scan';
+    btn.closest('.part-row').remove();
+    recalcPriceFor(prefix);
+}
+window.removeItemRow = removeItemRow;
 
 function recalcPrice(el) {
     // find the form context (entry or scan)
