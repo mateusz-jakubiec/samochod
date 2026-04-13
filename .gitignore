@@ -1,6 +1,9 @@
 # Claude Code (local config)
 .claude/
 
+# Mockupy (pliki robocze do podglądu)
+mockups/
+
 # Logs
 logs
 *.log
